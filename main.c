@@ -1,3 +1,11 @@
+//
+//  main.c
+//  jagu
+//
+//  Created by Seung Hyun Kong on 6/6/17.
+//  Copyright © 2017 Seung Hyun Kong. All rights reserved.
+//
+
 #include <stdio.h>
 #include <stdlib.h>
 
