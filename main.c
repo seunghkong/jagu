@@ -310,16 +310,33 @@ void deletenode(TreePtr tree, NodePtr z){
     }
     
 }
-
+//int height = 0;
 void rbt_print(TreePtr self, NodePtr tree, int level) {
-    //level = 0;
-    if (tree->right != NULL)
+    if (tree->right != NULL){
+        //height++;
         rbt_print(self,tree->right, level + 1);
+    }
     for(int i = 0; i < level; i++)
         printf("    ");
     printf("%d\n", tree->key);
-    if (tree->left != NULL)
+    if (tree->left != NULL){
+        //height++;
         rbt_print(self, tree->left, level + 1);
+    }
+}
+
+int treeheight(TreePtr tree, NodePtr node){
+    if (node == tree->sentinel){
+        return 0;
+    } else {
+        int ldepth = treeheight(tree, node->left);
+        int rdepth = treeheight(tree, node->right);
+        if (ldepth > rdepth){
+            return (ldepth+1);
+        } else {
+            return (rdepth + 1);
+        }
+    }
 }
 
 int nodecount(TreePtr self, NodePtr tree) {
@@ -334,17 +351,39 @@ int nodecount(TreePtr self, NodePtr tree) {
     return i;
 }
 
-int blackcount(NodePtr tree){
+int isleaf(TreePtr tree, NodePtr node){
+    if (node == NULL){
+        return 0;
+    } else if (node->left == tree->sentinel){
+        return 0;
+    } else if (node->right == tree->sentinel){
+        return 0;
+    } else {
+        return 1;
+    }
+}
+
+int blackcount(TreePtr root, NodePtr tree){
     int i = 0;
     if (tree == NULL){
         return 0;
     } else {
-        i = tree->left != NULL || tree->right != NULL || tree->red ? 0 : 1;
-        return blackcount(tree->left) + blackcount(tree->right) + i;
+        i = isleaf(root, tree) || tree->red==0 ?  1 : 0;
+        return blackcount(root, tree->left) + blackcount(root, tree->right) + i;
     }
     
 }
 
+void inordertrav(TreePtr tree, NodePtr node){
+    if (node == tree->sentinel){
+        return;
+    } else {
+        inordertrav(tree, node->left);
+        printf("%d\n", node->key);
+        inordertrav(tree, node->right);
+    }
+    
+}
 
 int main(void){
     TreePtr t = treeinit();
@@ -368,6 +407,8 @@ int main(void){
     fclose(fp);
     //rbt_print(t, t->root, 0);
     printf("total = %d\n", nodecount(t, t->root));
-    printf("nb = %d\n", blackcount(t->root));
+    printf("nb = %d\n", blackcount(t, t->root));
+    printf("bh = %d\n", treeheight(t, t->root));
+    //inordertrav(t, t->root);
     return 0;
 }
