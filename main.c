@@ -275,13 +275,14 @@ void deletefix(TreePtr tree, NodePtr x){
 }
 
 void deletenode(TreePtr tree, NodePtr z){
+    
     NodePtr y = z;
     NodePtr x;
     int y_original_color = y->red;
     
-    if (z == NULL){
+    if (z == tree->sentinel){
         return;
-    } else if (z->left == NULL){
+    } else if (z->left == tree->sentinel){
         x = z->right;
         transplant(tree, z, z->right);
     } else if (z == tree->sentinel){
@@ -398,7 +399,7 @@ int main(void){
             insert(t, nodeinit(data));
         } else if (data < 0){
             if (search(t->root, abs(data)) != NULL){
-                //deletenode(t, search(t->root, abs(data)));
+                deletenode(t, search(t->root, abs(data)));
             } else {
                 printf("absolute value of %d is not already in the rb Tree. Ignoring...\n", data);
             }
@@ -409,6 +410,6 @@ int main(void){
     printf("total = %d\n", nodecount(t, t->root));
     printf("nb = %d\n", blackcount(t, t->root));
     printf("bh = %d\n", treeheight(t, t->root));
-    //inordertrav(t, t->root);
+    inordertrav(t, t->root);
     return 0;
 }
