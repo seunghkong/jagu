@@ -8,6 +8,8 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <sys/types.h>
+#include <dirent.h>
 
 typedef struct rbNode* NodePtr;
 struct rbNode{
@@ -119,19 +121,19 @@ void InsertFix(TreePtr t, NodePtr z){
                 z = z->parent->parent;
             } else {
                 if (z == z->parent->right) {
-                z = z->parent;
-                left_Rot(t, z);
+                    z = z->parent;
+                    left_Rot(t, z);
                 }
-            z->parent->red = 0;
-            z->parent->parent->red = 1;
-            right_Rot(t, z->parent->parent);
+                z->parent->red = 0;
+                z->parent->parent->red = 1;
+                right_Rot(t, z->parent->parent);
             }
         } else {
             y = z->parent->parent->left;
             if (y != t->nil && y->red) {
                 z->parent->red = 0;
                 y->red = 0;
-                z->parent->parent->red = 0;
+                z->parent->parent->red = 1;
                 z = z->parent->parent;
             } else {
                 if (z == z->parent->left) {
@@ -176,8 +178,8 @@ void insert(TreePtr t, NodePtr z){
     } else {
         y->right = z;
     }
-    z->left  = t->nil;
-    z->right = t->nil;
+    //z->left  = t->nil;
+    //z->right = t->nil;
     z->red = 1;
     InsertFix(t, z);
 }
@@ -255,7 +257,7 @@ void deletefix(TreePtr t, NodePtr x) {
                 w->red = 1;
                 x = x->parent;
             } else {
-                if (w->left->red == 0 ) {
+                if (w->left->red == 0) {
                     w->right->red = 0;
                     w->red = 1;
                     left_Rot(t, w);
@@ -365,9 +367,9 @@ int blackcount(TreePtr t, NodePtr node){
         return 0;
     } else {
         if (node->red == 0) {
-            return blackcount(t, node->left) + blackcount(t, node->right) + 1;
-        } else {
             return blackcount(t, node->left) + blackcount(t, node->right);
+        } else {
+            return blackcount(t, node->left) + blackcount(t, node->right) + 1;
         }
     }
     
@@ -378,7 +380,7 @@ void inordertrav(TreePtr tree, NodePtr node){
         return;
     } else {
         inordertrav(tree, node->left);
-        printf("%d\n", node->key);
+        printf("%3d - %s\n", node->key, node->red ? "r" : "b");
         inordertrav(tree, node->right);
     }
     
@@ -389,8 +391,21 @@ int main(void){
     nil = nilinit();
     TreePtr t = treeinit();
     FILE *fp;
+    //DIR *dp;
+    /*struct dirent *ep = NULL;
+    dp = opendir("./input/");
+    if (dp != NULL) {
+        while (ep = readdir(dp)) {
+            puts(ep->d_name);
+        }
+        (void) closedir(dp);
+        
+    } else {
+        perror("Couldn't open Directory\n");
+        return 0;
+    }*/
     //int i = 0;
-    int data;
+    int data, in = 0, del = 0, miss = 0;
     fp = fopen("/Users/seunghkong/desktop/input.txt", "r");
     while(fscanf(fp, "%d", &data)){
         if (data == 0){
@@ -398,24 +413,36 @@ int main(void){
         } else if (data > 0){
             //printf("inserting %d\n",data);
             insert(t, nodeinit(data));
+            in++;
             //rbt_print(t, t->root, 0);
         } else if (data < 0){
             //printf("%d is negative\n", data);
             if (search(t, t->root, abs(data)) != t->nil){
                 //printf("is in tree %d\n", search(t, t->root, abs(data))->key);
                 deletenode(t, search(t, t->root, abs(data)));
+                del++;
                 //printf("%d is deleted\n", data);
                 //rbt_print(t, t->root, 0);
             } else {
-                printf("absolute value of %d is not already in the rb Tree. Ignoring...\n", data);
+                miss++;
+                //printf("absolute value of %4d is not already in the rb Tree. Ignoring...\n", data);
             }
         }
     }
     fclose(fp);
     //rbt_print(t, t->root, 0);
-    printf("total = %d\n", nodecount(t, t->root));
-    printf("nb = %d\n", blackcount(t, t->root));
-    printf("bh = %d\n", treeheight(t));
+    printf("total = %d\n", nodecount(t, t->root));  //all node count
+    printf("insert = %d\n", in);                    //number of inserts
+    printf("delete = %d\n", del);                   //number of deletes
+    printf("miss = %d\n", miss);                    //number of misses
+    printf("nb = %d\n", blackcount(t, t->root));    //number of black nodes
+    printf("bh = %d\n", treeheight(t));             //black node height
+    //rbt_print(t, t->root, 0);
     inordertrav(t, t->root);
+    NodePtr x = t->root;
+    while (x != t->nil){
+        printf("%d %d\n", x->key, x->red);
+       x = x->left;
+    }
     return 0;
 }
