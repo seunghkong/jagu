@@ -10,6 +10,7 @@
 #include <stdlib.h>
 #include <sys/types.h>
 #include <dirent.h>
+#include <string.h>
 
 typedef struct rbNode* NodePtr;
 struct rbNode{
@@ -388,22 +389,25 @@ void inordertrav(TreePtr tree, NodePtr node){
 
 int main(void){
     //nil = nodeinit(-1);
+    char *name = "input";
+    //char *mydirect = "/Users/seunghkong/desktop/";    //change directory here to test
     nil = nilinit();
     TreePtr t = treeinit();
     FILE *fp;
-    //DIR *dp;
-    /*struct dirent *ep = NULL;
-    dp = opendir("./input/");
+    DIR *dp;
+    struct dirent *ep = NULL;
+    dp = opendir("/Users/seunghkong/desktop/");
     if (dp != NULL) {
-        while (ep = readdir(dp)) {
-            puts(ep->d_name);
+        while ((ep = readdir(dp))) {
+            if (strstr(ep->d_name, name) != NULL)
+                puts(ep->d_name);
         }
         (void) closedir(dp);
         
     } else {
         perror("Couldn't open Directory\n");
         return 0;
-    }*/
+    }
     //int i = 0;
     int data, in = 0, del = 0, miss = 0;
     fp = fopen("/Users/seunghkong/desktop/input.txt", "r");
@@ -412,19 +416,19 @@ int main(void){
             break;
         } else if (data > 0){
             //printf("inserting %d\n",data);
-            insert(t, nodeinit(data));
+            insert(t, nodeinit(data));      //insert
             in++;
             //rbt_print(t, t->root, 0);
         } else if (data < 0){
             //printf("%d is negative\n", data);
-            if (search(t, t->root, abs(data)) != t->nil){
+            if (search(t, t->root, abs(data)) != t->nil){       //if such node exists
                 //printf("is in tree %d\n", search(t, t->root, abs(data))->key);
-                deletenode(t, search(t, t->root, abs(data)));
-                del++;
+                deletenode(t, search(t, t->root, abs(data)));   //delete selected node
+                del++;                                          //count delete
                 //printf("%d is deleted\n", data);
                 //rbt_print(t, t->root, 0);
             } else {
-                miss++;
+                miss++;                                         //count miss
                 //printf("absolute value of %4d is not already in the rb Tree. Ignoring...\n", data);
             }
         }
@@ -439,10 +443,12 @@ int main(void){
     printf("bh = %d\n", treeheight(t));             //black node height
     //rbt_print(t, t->root, 0);
     inordertrav(t, t->root);
-    NodePtr x = t->root;
+    //NodePtr x = t->root;
+    /*
     while (x != t->nil){
         printf("%d %d\n", x->key, x->red);
        x = x->left;
     }
+     */
     return 0;
 }
