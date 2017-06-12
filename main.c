@@ -365,12 +365,13 @@ int isleaf(TreePtr tree, NodePtr node){
 int blackcount(TreePtr t, NodePtr node){
     //int i = 0;
     if (node == nil) {
+        node = t->root;
         return 0;
     } else {
         if (node->red == 0) {
-            return blackcount(t, node->left) + blackcount(t, node->right);
-        } else {
             return blackcount(t, node->left) + blackcount(t, node->right) + 1;
+        } else {
+            return blackcount(t, node->left) + blackcount(t, node->right);
         }
     }
     
