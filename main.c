@@ -11,6 +11,10 @@
 #include <sys/types.h>
 #include <dirent.h>
 #include <string.h>
+#include <assert.h>
+#include <ctype.h>
+
+int ilist[9];              //global jic
 
 typedef struct rbNode* NodePtr;
 struct rbNode{
@@ -60,6 +64,13 @@ TreePtr treeinit(){
 NodePtr nodemin(NodePtr node, NodePtr nil){
     while (node->left != nil){
         node = node->left;
+    }
+    return node;
+}
+
+NodePtr nodemax(NodePtr node, NodePtr nil) {
+    while (node->right != nil) {
+        node = node->right;
     }
     return node;
 }
@@ -385,7 +396,119 @@ void inordertrav(TreePtr tree, NodePtr node){
         printf("%3d - %s\n", node->key, node->red ? "r" : "b");
         inordertrav(tree, node->right);
     }
+}
+
+
+void findPreSuc(TreePtr t, NodePtr root, NodePtr pre, NodePtr suc, int key) {
+    // Base case
+    if (root == t->nil)  return;
     
+    // If key is present at root
+    if (root->key == key)
+    {
+        // the maximum value in left subtree is predecessor
+        if (root->left != t->nil)
+        {
+            NodePtr tmp = root->left;
+            while (tmp->right)
+                tmp = tmp->right;
+            pre = tmp ;
+        }
+        
+        // the minimum value in right subtree is successor
+        if (root->right != t->nil)
+        {
+            NodePtr tmp = root->right ;
+            while (tmp->left)
+                tmp = tmp->left ;
+            suc = tmp;
+        }
+        return ;
+    }
+    
+    // If key is smaller than root's key, go to left subtree
+    if (root->key > key)
+    {
+        suc = root ;
+        findPreSuc(t, root->left, pre, suc, key) ;
+    }
+    else // go to right subtree
+    {
+        pre = root ;
+        findPreSuc(t, root->right, pre, suc, key) ;
+    }
+}
+
+int iforthislittlepieceo = 0;
+void inorderlist(TreePtr t, NodePtr node) {
+    
+    if (node == t->nil){
+        return;
+    } else {
+        inorderlist(t, node->left);
+        ilist[iforthislittlepieceo++] = node->key;
+        inorderlist(t, node->right);
+    }
+}
+
+void swap(char* a, char* b)
+{
+    char temp = *a;
+    *a = *b;
+    *b = temp;
+}
+
+void reverse(char str[], int length)
+{
+    int start = 0;
+    int end = length -1;
+    while (start < end)
+    {
+        swap((str+start), (str+end));
+        start++;
+        end--;
+    }
+}
+
+char* itoa(int num, char* str) {
+    int base = 10;
+    int i = 0;
+    int isNegative = 0;
+    
+    /* Handle 0 explicitely, otherwise empty string is printed for 0 */
+    if (num == 0)
+    {
+        str[i++] = '0';
+        str[i] = '\0';
+        return str;
+    }
+    
+    // In standard itoa(), negative numbers are handled only with
+    // base 10. Otherwise numbers are considered unsigned.
+    if (num < 0 && base == 10)
+    {
+        isNegative = 1;
+        num = -num;
+    }
+    
+    // Process individual digits
+    while (num != 0)
+    {
+        int rem = num % base;
+        str[i++] = (rem > 9)? (rem-10) + 'a' : rem + '0';
+        num = num/base;
+    }
+    
+    // If number is negative, append '-'
+    if (isNegative)
+        str[i++] = '-';
+    
+    str[i] = '\0'; // Append string terminator
+    
+    // Reverse the string
+    reverse(str, i);
+    
+    return str;
 }
 
 int main(void){
@@ -394,7 +517,7 @@ int main(void){
     //char *mydirect = "/Users/seunghkong/desktop/";    //change directory here to test
     nil = nilinit();
     TreePtr t = treeinit();
-    FILE *fp;
+    FILE *fp, *wr;
     DIR *dp;
     struct dirent *ep = NULL;
     dp = opendir("/Users/seunghkong/desktop/");
@@ -410,8 +533,9 @@ int main(void){
         return 0;
     }
     //int i = 0;
+    char ch[5] = "";
     int data, in = 0, del = 0, miss = 0;
-    fp = fopen("/Users/seunghkong/desktop/input.txt", "r");
+    fp = fopen("/Users/seunghkong/desktop/test01.txt", "r");
     while(fscanf(fp, "%d", &data)){
         if (data == 0){
             break;
@@ -435,6 +559,44 @@ int main(void){
         }
     }
     fclose(fp);
+    //int ilist[30];
+    inorderlist(t, t->root);
+    
+    //NodePtr pre, suc;
+    fp = fopen("/Users/seunghkong/desktop/search01.txt", "r");
+    wr = fopen("/Users/seunghkong/desktop/out01.txt", "w");
+    while (fscanf(fp, "%d", &data)) {
+        //printf("%d ", data);
+        if (data == 0) {
+            break;
+        }
+        
+        //pre = suc = t->nil;
+        //NodePtr temp = search(t, t->root, data);
+        //findPreSuc(t, t->root, pre, suc, data);
+        for (int i = 0; i<9; i++) {
+            if (data == ilist[i]) {
+                fprintf(wr, "%5s %5d %5s\n",
+                       ilist[i-1] != 0 ? itoa(ilist[i-1], ch) : "NIL",
+                       ilist[i],
+                       ilist[i+1] != 0 ? itoa(ilist[i+1], ch) : "NIL"
+                       );
+                break;
+            } else if (data < ilist[i]) {
+                fprintf(wr, "%5s NIL %5s\n",
+                       ilist[i-1] != 0 ? itoa(ilist[i-1], ch) : "NIL",
+                       ilist[i] != 0 ? itoa(ilist[i-1], ch) : "NIL"
+                       );
+                break;
+            }
+        }
+        
+        
+    }
+    fclose(fp);
+    //fclose(wr);
+
+    /*
     //rbt_print(t, t->root, 0);
     printf("total = %d\n", nodecount(t, t->root));  //all node count
     printf("insert = %d\n", in);                    //number of inserts
@@ -443,13 +605,9 @@ int main(void){
     printf("nb = %d\n", blackcount(t, t->root));    //number of black nodes
     printf("bh = %d\n", treeheight(t));             //black node height
     //rbt_print(t, t->root, 0);
-    inordertrav(t, t->root);
+    //inordertrav(t, t->root);
     //NodePtr x = t->root;
-    /*
-    while (x != t->nil){
-        printf("%d %d\n", x->key, x->red);
-       x = x->left;
-    }
-     */
+    */
+    
     return 0;
 }
